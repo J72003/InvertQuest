@@ -1,0 +1,74 @@
+{
+  "expo": {
+    "name": "Fieldnotes",
+    "slug": "fieldnotes",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "scheme": "fieldnotes",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#f1e8d0"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.fieldnotes.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Fieldnotes uses your camera to photograph freshwater invertebrates for identification.",
+        "NSLocationWhenInUseUsageDescription": "Fieldnotes tags your specimens with GPS coordinates so they can be linked to stream sites.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Fieldnotes tags your specimens with GPS coordinates so they can be linked to stream sites."
+      }
+    },
+    "android": {
+      "package": "com.fieldnotes.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#f1e8d0",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.RECORD_AUDIO"
+      ],
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-font",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Fieldnotes uses your camera to photograph freshwater invertebrates.",
+          "microphonePermission": false,
+          "recordAudioAndroid": false
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Fieldnotes tags specimens with GPS coordinates.",
+          "locationWhenInUsePermission": "Fieldnotes tags specimens with GPS coordinates."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#2a4525"
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "YOUR_EAS_PROJECT_ID"
+      }
+    }
+  }
+}
