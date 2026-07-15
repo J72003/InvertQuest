@@ -40,7 +40,7 @@ function SpecimenCard({
   useEffect(() => {
     supabase.storage
       .from('specimens')
-      .createSignedUrl(specimen.image_path, 3600)
+      .createSignedUrl(specimen.image_path, 604800)
       .then(({ data }) => {
         if (data?.signedUrl) setImageUrl(data.signedUrl);
       });

@@ -6,6 +6,7 @@ import type { CompositeNavigationProp } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useOfflineQueueStore } from '../../store/offlineQueueStore';
+import { useAuthStore } from '../../store/authStore';
 import { Colors } from '../../constants/colors';
 import type { MainTabParamList, AppStackParamList } from '../../navigation/types';
 
@@ -133,6 +134,8 @@ function OnboardingModal({ onDismiss }: { onDismiss: () => void }) {
 export function HomeScreen({ navigation }: Props) {
   const queue = useOfflineQueueStore((s) => s.queue);
   const hasQueue = queue.length > 0;
+  const user = useAuthStore((s) => s.user);
+  const isAnonymous = !user?.email;
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
@@ -170,6 +173,22 @@ export function HomeScreen({ navigation }: Props) {
           </Text>
         </View>
       )}
+
+      {/* Account button */}
+      <View style={{ position: 'absolute', top: 56, right: 20, zIndex: 10 }}>
+        <TouchableOpacity
+          onPress={() => navigation.navigate('Account')}
+          style={{
+            width: 36, height: 36, borderRadius: 18,
+            backgroundColor: isAnonymous ? Colors.gold + '25' : Colors.forest + '15',
+            borderWidth: 1,
+            borderColor: isAnonymous ? Colors.gold + '60' : Colors.forest + '30',
+            alignItems: 'center', justifyContent: 'center',
+          }}
+        >
+          <Text style={{ fontSize: 16 }}>{isAnonymous ? '⚠️' : '👤'}</Text>
+        </TouchableOpacity>
+      </View>
 
       <View
         style={{

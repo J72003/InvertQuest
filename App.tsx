@@ -22,6 +22,7 @@ import { View, Text, ActivityIndicator } from 'react-native';
 import { queryClient } from './src/lib/queryClient';
 import { RootNavigator } from './src/navigation/RootNavigator';
 import { useAuthListener } from './src/hooks/useAuth';
+import { useOfflineSync } from './src/hooks/useOfflineSync';
 import { useOfflineQueueStore } from './src/store/offlineQueueStore';
 import { Colors } from './src/constants/colors';
 import { Toast } from './src/components/ui/Toast';
@@ -50,6 +51,7 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: string |
 
 function AppContent() {
   useAuthListener();
+  useOfflineSync();
   const hydrateQueue = useOfflineQueueStore((s) => s.hydrate);
 
   useEffect(() => {

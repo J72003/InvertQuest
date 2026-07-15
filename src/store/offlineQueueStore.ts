@@ -7,6 +7,7 @@ const QUEUE_KEY = 'fieldnotes_offline_queue';
 export interface QueuedSpecimen {
   queueId: string;
   localImageUri: string;
+  imageBase64: string;
   taxonId: string | null;
   classroomId: string | null;
   sizeEstimate: SizeEstimate | null;

@@ -75,7 +75,7 @@ export function SpecimenDetailScreen({ navigation, route }: Props) {
     if (!specimen?.image_path) return;
     supabase.storage
       .from('specimens')
-      .createSignedUrl(specimen.image_path, 3600)
+      .createSignedUrl(specimen.image_path, 604800)
       .then(({ data }) => { if (data?.signedUrl) setImageUrl(data.signedUrl); });
   }, [specimen?.image_path]);
 

@@ -4,6 +4,7 @@ import { MainNavigator } from './MainNavigator';
 import { CameraScreen } from '../screens/capture/CameraScreen';
 import { DetailsScreen } from '../screens/capture/DetailsScreen';
 import { SpecimenDetailScreen } from '../screens/specimen/SpecimenDetailScreen';
+import { AccountScreen } from '../screens/account/AccountScreen';
 import { Colors } from '../constants/colors';
 import type { AppStackParamList } from './types';
 
@@ -37,6 +38,11 @@ export function AppNavigator() {
       <Stack.Screen
         name="SpecimenDetail"
         component={SpecimenDetailScreen}
+        options={{ headerShown: false, animation: 'slide_from_right' }}
+      />
+      <Stack.Screen
+        name="Account"
+        component={AccountScreen}
         options={{ headerShown: false, animation: 'slide_from_right' }}
       />
     </Stack.Navigator>

@@ -12,4 +12,5 @@ export type AppStackParamList = {
   Camera: undefined;
   Details: undefined;
   SpecimenDetail: { specimenId: string };
+  Account: undefined;
 };

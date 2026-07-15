@@ -46,38 +46,13 @@ async function uploadImage(
   return { imagePath, imageUrl: imagePath };
 }
 
-export async function saveSpecimen(
-  params: SaveSpecimenParams,
-): Promise<{ queued: boolean; specimenId: string | null }> {
-  const netState = await NetInfo.fetch();
-  const isOnline = netState.isConnected && netState.isInternetReachable;
-
-  if (!isOnline) {
-    await useOfflineQueueStore.getState().add({
-      localImageUri: params.localImageUri,
-      taxonId: params.taxonId,
-      classroomId: params.classroomId,
-      sizeEstimate: params.sizeEstimate,
-      habitat: params.habitat,
-      behaviors: params.behaviors,
-      confidence: params.confidence,
-      notes: params.notes,
-      latitude: params.latitude,
-      longitude: params.longitude,
-      aiPredictions: params.aiPredictions,
-      capturedAt: params.capturedAt,
-    });
-    return { queued: true, specimenId: null };
-  }
-
-  // Upload image
+async function _saveOnline(params: SaveSpecimenParams): Promise<string> {
   const { imagePath, imageUrl } = await uploadImage(
     params.userId,
     params.imageBase64,
     params.capturedAt,
   );
 
-  // Auto-link to nearby site if within 100m
   let siteId: string | null = null;
   if (params.latitude && params.longitude) {
     const { data } = await supabase.rpc('nearby_site', {
@@ -88,7 +63,6 @@ export async function saveSpecimen(
     siteId = data ?? null;
   }
 
-  // Insert specimen row
   const { data, error } = await supabase
     .from('specimens')
     .insert({
@@ -112,15 +86,47 @@ export async function saveSpecimen(
     .single();
 
   if (error) throw new Error(`Insert failed: ${error.message}`);
+  return data.id;
+}
 
-  return { queued: false, specimenId: data.id };
+export async function saveSpecimen(
+  params: SaveSpecimenParams,
+): Promise<{ queued: boolean; specimenId: string | null }> {
+  const netState = await NetInfo.fetch();
+  const isOnline = netState.isConnected && netState.isInternetReachable;
+
+  if (!isOnline) {
+    await useOfflineQueueStore.getState().add({
+      localImageUri: params.localImageUri,
+      imageBase64: params.imageBase64,
+      taxonId: params.taxonId,
+      classroomId: params.classroomId,
+      sizeEstimate: params.sizeEstimate,
+      habitat: params.habitat,
+      behaviors: params.behaviors,
+      confidence: params.confidence,
+      notes: params.notes,
+      latitude: params.latitude,
+      longitude: params.longitude,
+      aiPredictions: params.aiPredictions,
+      capturedAt: params.capturedAt,
+    });
+    return { queued: true, specimenId: null };
+  }
+
+  const specimenId = await _saveOnline(params);
+  return { queued: false, specimenId };
+}
+
+export async function saveSpecimenDirect(params: SaveSpecimenParams): Promise<void> {
+  await _saveOnline(params);
 }
 
 // Generate a signed URL for displaying a specimen image (valid 1 hour)
 export async function getSpecimenImageUrl(imagePath: string): Promise<string | null> {
   const { data, error } = await supabase.storage
     .from('specimens')
-    .createSignedUrl(imagePath, 3600);
+    .createSignedUrl(imagePath, 604800);
   if (error) return null;
   return data.signedUrl;
 }
