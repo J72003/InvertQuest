@@ -171,7 +171,7 @@ function SiteCard({ site }: { site: SiteWithMetrics }) {
             flex: 1,
           }}
         >
-          {lastSampled ? `Last sampled ${lastSampled}` : 'No specimens linked yet — capture within 100 m'}
+          {lastSampled ? `Last sampled ${lastSampled}` : 'No specimens linked yet. Capture within 100 m to link automatically.'}
         </Text>
         <TouchableOpacity
           onPress={() =>
@@ -270,7 +270,7 @@ function CreateSiteModal({
     gpsStatus === 'idle' ? 'Detect GPS location'
     : gpsStatus === 'locating' ? 'Locating…'
     : gpsStatus === 'found' ? `📍 ${coords!.latitude.toFixed(5)}, ${coords!.longitude.toFixed(5)}`
-    : 'GPS failed — try again';
+    : 'GPS failed. Tap to try again.';
 
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onShow={handleOpen}>
@@ -542,7 +542,7 @@ export function SitesScreen() {
                   lineHeight: 22,
                 }}
               >
-                Create a site at your sampling location. Specimens you capture within 100 m will automatically link to it and build a water quality score.
+                Create a site at your sampling location. Specimens captured within 100 m will link to it automatically and build a water quality score over time.
               </Text>
               <TouchableOpacity
                 onPress={() => setShowCreate(true)}

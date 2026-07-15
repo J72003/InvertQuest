@@ -69,7 +69,7 @@ export function CameraScreen({ navigation }: Props) {
           Camera Access Needed
         </Text>
         <Text style={{ fontFamily: 'Newsreader_400Regular', fontSize: 15, color: Colors.textSecondary, textAlign: 'center', lineHeight: 22 }}>
-          Fieldnotes needs camera access to photograph invertebrates.
+          InverteQuest needs camera access to photograph invertebrates.
         </Text>
         <TouchableOpacity
           onPress={requestPermission}

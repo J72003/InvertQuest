@@ -133,7 +133,7 @@ export function DetailsScreen({ navigation }: Props) {
       clearPending();
       await queryClient.invalidateQueries({ queryKey: ['specimens'] });
 
-      showToast(queued ? 'Saved offline — will sync when connected' : 'Specimen saved!', queued ? 'info' : 'success');
+      showToast(queued ? 'Saved offline. Will sync when connected.' : 'Specimen saved!', queued ? 'info' : 'success');
 
       // Navigate back to Home tab
       navigation.navigate('MainTabs', { screen: 'Collection' });

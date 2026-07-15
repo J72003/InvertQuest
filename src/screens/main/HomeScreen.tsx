@@ -45,24 +45,24 @@ function OnboardingModal({ onDismiss }: { onDismiss: () => void }) {
               lineHeight: 24,
             }}
           >
-            Photograph freshwater invertebrates. Let AI identify them. Track the health of your local waterways.
+            Take photos of freshwater invertebrates, have AI identify them, and track the water quality at your sampling sites.
           </Text>
 
           {[
             {
               emoji: '🔬',
               title: 'How it works',
-              body: 'Point your camera at a macroinvertebrate — a stonefly, mayfly, caddisfly, or similar — and InverteQuest uses Claude AI to identify it from 13 indicator taxa.',
+              body: 'Point your camera at a macroinvertebrate (a stonefly, mayfly, caddisfly, or similar) and InverteQuest uses AI to identify it from 13 indicator taxa.',
             },
             {
               emoji: '📍',
               title: 'What is a Site?',
-              body: 'A site is a named sampling location — a stretch of stream, a pool, a riffle. Create one before you start capturing, and specimens within 100 m will automatically link to it.',
+              body: 'A site is a named sampling location, like a stretch of stream, a pool, or a riffle. Create one before capturing, and any specimen taken within 100 m will link to it automatically.',
             },
             {
               emoji: '📊',
               title: 'What is the FBI score?',
-              body: 'The Family Biotic Index (FBI) measures water quality based on how pollution-tolerant the invertebrates you find are. Sensitive species (like stoneflies) only survive in clean water. The lower the score, the better:\n\nA (0–3.75) · Excellent\nB (3.76–5.00) · Good\nC (5.01–6.50) · Fair\nD (6.51+) · Poor',
+              body: 'The Family Biotic Index (FBI) scores water quality based on the pollution tolerance of the invertebrates you find. Sensitive species like stoneflies can only survive in clean water. Lower is better.\n\nA (0–3.75)   Excellent\nB (3.76–5.00)  Good\nC (5.01–6.50)  Fair\nD (6.51+)    Poor',
             },
             {
               emoji: '🦟',
@@ -166,7 +166,7 @@ export function HomeScreen({ navigation }: Props) {
               textAlign: 'center',
             }}
           >
-            {queue.length} specimen{queue.length > 1 ? 's' : ''} queued offline — will sync when connected
+            {queue.length} specimen{queue.length > 1 ? 's' : ''} queued offline. Will sync when connected.
           </Text>
         </View>
       )}
@@ -199,7 +199,7 @@ export function HomeScreen({ navigation }: Props) {
             lineHeight: 22,
           }}
         >
-          Tap below to photograph and identify a freshwater invertebrate.
+          Tap the button below to photograph and identify a freshwater invertebrate.
         </Text>
 
         <TouchableOpacity

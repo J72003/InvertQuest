@@ -159,7 +159,7 @@ export function SpecimenDetailScreen({ navigation, route }: Props) {
 
     await Share.share({
       message: [
-        `${taxonName} — ${date}`,
+        `${taxonName}, ${date}`,
         gpsText,
         specimen.notes ? `Notes: ${specimen.notes}` : '',
         mapsUrl,

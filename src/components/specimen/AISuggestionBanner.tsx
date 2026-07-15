@@ -14,7 +14,7 @@ const AGREEMENT_LABEL: Record<AISuggestion['agreement'], string> = {
   both: 'Both models agree',
   'roboflow-only': 'Only Roboflow responded',
   'claude-only': 'Only Claude responded',
-  disagree: 'Models disagree — lower confidence',
+  disagree: 'Models disagree. Lower confidence.',
   none: '',
 };
 
@@ -63,7 +63,7 @@ export function AISuggestionBanner({ suggestion, isLoading, onAccept }: AISugges
               >
                 Looks like{' '}
                 <Text style={{ color: Colors.forest }}>{taxon.commonName}</Text>
-                {' '}— {pct}%
+                {' '}({pct}%)
               </Text>
               <Text
                 style={{
@@ -110,7 +110,7 @@ export function AISuggestionBanner({ suggestion, isLoading, onAccept }: AISugges
             color: Colors.textSecondary,
           }}
         >
-          Pre-selected below — tap a different tile to override.
+          Pre-selected below. Tap a different tile to change it.
         </Text>
       )}
     </View>
