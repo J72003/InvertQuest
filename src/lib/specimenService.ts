@@ -79,11 +79,11 @@ export async function saveSpecimen(
 
   // Auto-link to nearby site if within 100m
   let siteId: string | null = null;
-  if (params.latitude && params.longitude && params.classroomId) {
+  if (params.latitude && params.longitude) {
     const { data } = await supabase.rpc('nearby_site', {
       p_lat: params.latitude,
       p_lng: params.longitude,
-      p_classroom_id: params.classroomId,
+      p_user_id: params.userId,
     });
     siteId = data ?? null;
   }
@@ -123,4 +123,28 @@ export async function getSpecimenImageUrl(imagePath: string): Promise<string | n
     .createSignedUrl(imagePath, 3600);
   if (error) return null;
   return data.signedUrl;
+}
+
+export async function updateSpecimen(
+  specimenId: string,
+  updates: {
+    taxon_id?: string | null;
+    size_estimate?: string | null;
+    habitat?: string | null;
+    behaviors?: string[];
+    confidence?: string | null;
+    notes?: string | null;
+  },
+): Promise<void> {
+  const { error } = await supabase
+    .from('specimens')
+    .update(updates)
+    .eq('id', specimenId);
+  if (error) throw new Error(error.message);
+}
+
+export async function deleteSpecimen(specimenId: string, imagePath: string): Promise<void> {
+  await supabase.storage.from('specimens').remove([imagePath]);
+  const { error } = await supabase.from('specimens').delete().eq('id', specimenId);
+  if (error) throw new Error(error.message);
 }

@@ -1,12 +1,15 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, Modal, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { CompositeNavigationProp } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useOfflineQueueStore } from '../../store/offlineQueueStore';
 import { Colors } from '../../constants/colors';
 import type { MainTabParamList, AppStackParamList } from '../../navigation/types';
+
+const ONBOARDING_KEY = 'onboarding_seen_v1';
 
 type Props = {
   navigation: CompositeNavigationProp<
@@ -15,13 +18,138 @@ type Props = {
   >;
 };
 
+function OnboardingModal({ onDismiss }: { onDismiss: () => void }) {
+  return (
+    <Modal animationType="slide" presentationStyle="pageSheet">
+      <SafeAreaView style={{ flex: 1, backgroundColor: Colors.parchment }}>
+        <ScrollView
+          contentContainerStyle={{ padding: 28, gap: 24 }}
+          showsVerticalScrollIndicator={false}
+        >
+          <Text
+            style={{
+              fontFamily: 'CormorantGaramond_600SemiBold_Italic',
+              fontSize: 36,
+              color: Colors.forest,
+              textAlign: 'center',
+            }}
+          >
+            Welcome to InverteQuest
+          </Text>
+          <Text
+            style={{
+              fontFamily: 'Newsreader_400Regular_Italic',
+              fontSize: 16,
+              color: Colors.textSecondary,
+              textAlign: 'center',
+              lineHeight: 24,
+            }}
+          >
+            Photograph freshwater invertebrates. Let AI identify them. Track the health of your local waterways.
+          </Text>
+
+          {[
+            {
+              emoji: '🔬',
+              title: 'How it works',
+              body: 'Point your camera at a macroinvertebrate — a stonefly, mayfly, caddisfly, or similar — and InverteQuest uses Claude AI to identify it from 13 indicator taxa.',
+            },
+            {
+              emoji: '📍',
+              title: 'What is a Site?',
+              body: 'A site is a named sampling location — a stretch of stream, a pool, a riffle. Create one before you start capturing, and specimens within 100 m will automatically link to it.',
+            },
+            {
+              emoji: '📊',
+              title: 'What is the FBI score?',
+              body: 'The Family Biotic Index (FBI) measures water quality based on how pollution-tolerant the invertebrates you find are. Sensitive species (like stoneflies) only survive in clean water. The lower the score, the better:\n\nA (0–3.75) · Excellent\nB (3.76–5.00) · Good\nC (5.01–6.50) · Fair\nD (6.51+) · Poor',
+            },
+            {
+              emoji: '🦟',
+              title: 'What is EPT?',
+              body: 'EPT stands for Ephemeroptera (mayflies), Plecoptera (stoneflies), and Trichoptera (caddisflies). These three orders are the most sensitive to pollution and are used worldwide as water quality indicators. A high EPT count means healthy water.',
+            },
+          ].map((item) => (
+            <View
+              key={item.title}
+              style={{
+                backgroundColor: Colors.inputBg,
+                borderRadius: 12,
+                borderWidth: 1,
+                borderColor: Colors.borderLight,
+                padding: 16,
+                gap: 8,
+              }}
+            >
+              <Text style={{ fontSize: 28 }}>{item.emoji}</Text>
+              <Text
+                style={{
+                  fontFamily: 'Newsreader_600SemiBold',
+                  fontSize: 16,
+                  color: Colors.forest,
+                }}
+              >
+                {item.title}
+              </Text>
+              <Text
+                style={{
+                  fontFamily: 'Newsreader_400Regular',
+                  fontSize: 14,
+                  color: Colors.textSecondary,
+                  lineHeight: 22,
+                }}
+              >
+                {item.body}
+              </Text>
+            </View>
+          ))}
+
+          <TouchableOpacity
+            onPress={onDismiss}
+            style={{
+              backgroundColor: Colors.forest,
+              borderRadius: 12,
+              paddingVertical: 16,
+              alignItems: 'center',
+              marginTop: 8,
+            }}
+          >
+            <Text
+              style={{
+                fontFamily: 'Newsreader_600SemiBold',
+                fontSize: 17,
+                color: Colors.parchment,
+              }}
+            >
+              Start Exploring
+            </Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </SafeAreaView>
+    </Modal>
+  );
+}
+
 export function HomeScreen({ navigation }: Props) {
   const queue = useOfflineQueueStore((s) => s.queue);
   const hasQueue = queue.length > 0;
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  useEffect(() => {
+    AsyncStorage.getItem(ONBOARDING_KEY).then((val) => {
+      if (!val) setShowOnboarding(true);
+    });
+  }, []);
+
+  async function dismissOnboarding() {
+    await AsyncStorage.setItem(ONBOARDING_KEY, 'true');
+    setShowOnboarding(false);
+  }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors.parchment }}>
-      {/* Offline banner */}
+      {showOnboarding && <OnboardingModal onDismiss={dismissOnboarding} />}
+
       {hasQueue && (
         <View
           style={{
@@ -43,7 +171,6 @@ export function HomeScreen({ navigation }: Props) {
         </View>
       )}
 
-      {/* Main content */}
       <View
         style={{
           flex: 1,
@@ -75,7 +202,6 @@ export function HomeScreen({ navigation }: Props) {
           Tap below to photograph and identify a freshwater invertebrate.
         </Text>
 
-        {/* Primary action button */}
         <TouchableOpacity
           activeOpacity={0.85}
           onPress={() => navigation.navigate('Camera')}
@@ -104,6 +230,19 @@ export function HomeScreen({ navigation }: Props) {
             }}
           >
             New Specimen
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => setShowOnboarding(true)}>
+          <Text
+            style={{
+              fontFamily: 'Newsreader_400Regular_Italic',
+              fontSize: 13,
+              color: Colors.textMuted,
+              textDecorationLine: 'underline',
+            }}
+          >
+            What is InverteQuest?
           </Text>
         </TouchableOpacity>
       </View>

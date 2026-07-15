@@ -6,16 +6,35 @@ import {
   Image,
   ActivityIndicator,
   RefreshControl,
+  TouchableOpacity,
+  TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import type { CompositeNavigationProp } from '@react-navigation/native';
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { supabase } from '../../lib/supabase';
 import { useSpecimens } from '../../hooks/useSpecimens';
 import { useAuthStore } from '../../store/authStore';
 import { TolerancePill } from '../../components/ui/TolerancePill';
 import { Colors } from '../../constants/colors';
 import type { SpecimenWithRelations } from '../../types/database';
+import type { MainTabParamList, AppStackParamList } from '../../navigation/types';
 
-function SpecimenCard({ specimen }: { specimen: SpecimenWithRelations }) {
+type Props = {
+  navigation: CompositeNavigationProp<
+    BottomTabNavigationProp<MainTabParamList, 'Collection'>,
+    NativeStackNavigationProp<AppStackParamList>
+  >;
+};
+
+function SpecimenCard({
+  specimen,
+  onPress,
+}: {
+  specimen: SpecimenWithRelations;
+  onPress: () => void;
+}) {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -35,7 +54,9 @@ function SpecimenCard({ specimen }: { specimen: SpecimenWithRelations }) {
   });
 
   return (
-    <View
+    <TouchableOpacity
+      activeOpacity={0.75}
+      onPress={onPress}
       style={{
         flexDirection: 'row',
         alignItems: 'center',
@@ -103,14 +124,17 @@ function SpecimenCard({ specimen }: { specimen: SpecimenWithRelations }) {
         )}
       </View>
 
-      {specimen.taxon && (
-        <TolerancePill tolerance={specimen.taxon.tolerance} size="sm" />
-      )}
-    </View>
+      <View style={{ alignItems: 'flex-end', gap: 6 }}>
+        {specimen.taxon && (
+          <TolerancePill tolerance={specimen.taxon.tolerance} size="sm" />
+        )}
+        <Text style={{ fontSize: 16, color: Colors.textMuted }}>›</Text>
+      </View>
+    </TouchableOpacity>
   );
 }
 
-function EmptyState() {
+function EmptyState({ hasSearch }: { hasSearch: boolean }) {
   return (
     <View
       style={{
@@ -121,7 +145,7 @@ function EmptyState() {
         gap: 12,
       }}
     >
-      <Text style={{ fontSize: 48 }}>🔬</Text>
+      <Text style={{ fontSize: 48 }}>{hasSearch ? '🔍' : '🔬'}</Text>
       <Text
         style={{
           fontFamily: 'CormorantGaramond_600SemiBold_Italic',
@@ -130,7 +154,7 @@ function EmptyState() {
           textAlign: 'center',
         }}
       >
-        No specimens yet
+        {hasSearch ? 'No matches' : 'No specimens yet'}
       </Text>
       <Text
         style={{
@@ -141,25 +165,37 @@ function EmptyState() {
           lineHeight: 22,
         }}
       >
-        Tap Capture to photograph your first freshwater invertebrate.
+        {hasSearch
+          ? 'Try a different taxon name or clear the search.'
+          : 'Tap Capture to photograph your first freshwater invertebrate.'}
       </Text>
     </View>
   );
 }
 
-export function CollectionScreen() {
+export function CollectionScreen({ navigation }: Props) {
   const user = useAuthStore((s) => s.user);
   const { data: specimens, isLoading, error, refetch, isRefetching } = useSpecimens(
     user?.id ?? null,
   );
+  const [search, setSearch] = useState('');
 
-  const onRefresh = useCallback(() => {
-    refetch();
-  }, [refetch]);
+  const onRefresh = useCallback(() => { refetch(); }, [refetch]);
+
+  const filtered = specimens?.filter((s) => {
+    if (!search.trim()) return true;
+    const q = search.toLowerCase();
+    return (
+      s.taxon?.common_name?.toLowerCase().includes(q) ||
+      s.taxon?.family?.toLowerCase().includes(q) ||
+      s.habitat?.toLowerCase().includes(q)
+    );
+  }) ?? [];
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors.parchment }}>
-      <View style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 12 }}>
+      {/* Header */}
+      <View style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8 }}>
         <Text
           style={{
             fontFamily: 'CormorantGaramond_600SemiBold_Italic',
@@ -183,6 +219,30 @@ export function CollectionScreen() {
         )}
       </View>
 
+      {/* Search bar */}
+      {specimens && specimens.length > 0 && (
+        <View style={{ paddingHorizontal: 20, paddingBottom: 8 }}>
+          <TextInput
+            value={search}
+            onChangeText={setSearch}
+            placeholder="Search by taxon, family, habitat…"
+            placeholderTextColor={Colors.textMuted}
+            clearButtonMode="while-editing"
+            style={{
+              fontFamily: 'Newsreader_400Regular',
+              fontSize: 15,
+              color: Colors.textPrimary,
+              backgroundColor: Colors.inputBg,
+              borderWidth: 1,
+              borderColor: Colors.border,
+              borderRadius: 10,
+              paddingHorizontal: 14,
+              paddingVertical: 10,
+            }}
+          />
+        </View>
+      )}
+
       {isLoading ? (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           <ActivityIndicator size="large" color={Colors.forest} />
@@ -202,10 +262,15 @@ export function CollectionScreen() {
         </View>
       ) : (
         <FlatList
-          data={specimens ?? []}
+          data={filtered}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <SpecimenCard specimen={item} />}
-          ListEmptyComponent={<EmptyState />}
+          renderItem={({ item }) => (
+            <SpecimenCard
+              specimen={item}
+              onPress={() => navigation.navigate('SpecimenDetail', { specimenId: item.id })}
+            />
+          )}
+          ListEmptyComponent={<EmptyState hasSearch={!!search.trim()} />}
           refreshControl={
             <RefreshControl
               refreshing={isRefetching}
@@ -214,7 +279,7 @@ export function CollectionScreen() {
             />
           }
           contentContainerStyle={
-            !specimens || specimens.length === 0 ? { flex: 1 } : undefined
+            filtered.length === 0 ? { flex: 1 } : undefined
           }
         />
       )}

@@ -3,10 +3,9 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { MainNavigator } from './MainNavigator';
 import { CameraScreen } from '../screens/capture/CameraScreen';
 import { DetailsScreen } from '../screens/capture/DetailsScreen';
+import { SpecimenDetailScreen } from '../screens/specimen/SpecimenDetailScreen';
 import { Colors } from '../constants/colors';
 import type { AppStackParamList } from './types';
-
-const PlaceholderScreen = () => null;
 
 const Stack = createNativeStackNavigator<AppStackParamList>();
 
@@ -37,8 +36,8 @@ export function AppNavigator() {
       />
       <Stack.Screen
         name="SpecimenDetail"
-        component={PlaceholderScreen}
-        options={{ title: 'Specimen' }}
+        component={SpecimenDetailScreen}
+        options={{ headerShown: false, animation: 'slide_from_right' }}
       />
     </Stack.Navigator>
   );
