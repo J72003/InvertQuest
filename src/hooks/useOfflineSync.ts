@@ -17,6 +17,11 @@ export function useOfflineSync() {
       let synced = 0;
 
       for (const item of [...store.queue]) {
+        // Items queued before imageBase64 was stored cannot be uploaded — discard them
+        if (!item.imageBase64) {
+          await store.remove(item.queueId);
+          continue;
+        }
         try {
           await saveSpecimenDirect({
             userId: user.id,

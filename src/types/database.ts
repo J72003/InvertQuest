@@ -55,7 +55,7 @@ export interface Taxon {
 
 export interface Site {
   id: string;
-  classroom_id: string;
+  classroom_id: string | null;
   name: string;
   description: string | null;
   latitude: number;

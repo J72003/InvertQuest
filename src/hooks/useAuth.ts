@@ -27,7 +27,6 @@ export function useAuthListener() {
       } catch (e: any) {
         const msg = e?.message ?? String(e);
         setError(msg);
-        // Retry in 5 seconds
         setTimeout(initSession, 5000);
         return;
       }
@@ -37,11 +36,14 @@ export function useAuthListener() {
     initSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setSession(session);
       if (event === 'SIGNED_OUT') {
         clear();
         queryClient.clear();
+        // Re-create an anonymous session so the app doesn't hang on a blank loading screen
+        initSession();
+        return;
       }
+      setSession(session);
       setLoading(false);
     });
 
