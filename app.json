@@ -1,12 +1,12 @@
 {
   "expo": {
-    "name": "Fieldnotes",
-    "slug": "fieldnotes",
+    "name": "InverteQuest",
+    "slug": "invertequest",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "scheme": "fieldnotes",
+    "scheme": "invertequest",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -14,15 +14,15 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.fieldnotes.app",
+      "bundleIdentifier": "com.invertequest.app",
       "infoPlist": {
-        "NSCameraUsageDescription": "Fieldnotes uses your camera to photograph freshwater invertebrates for identification.",
-        "NSLocationWhenInUseUsageDescription": "Fieldnotes tags your specimens with GPS coordinates so they can be linked to stream sites.",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "Fieldnotes tags your specimens with GPS coordinates so they can be linked to stream sites."
+        "NSCameraUsageDescription": "InverteQuest uses your camera to photograph freshwater invertebrates for identification.",
+        "NSLocationWhenInUseUsageDescription": "InverteQuest tags your specimens with GPS coordinates so they can be linked to stream sites.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "InverteQuest tags your specimens with GPS coordinates so they can be linked to stream sites."
       }
     },
     "android": {
-      "package": "com.fieldnotes.app",
+      "package": "com.invertequest.app",
       "adaptiveIcon": {
         "backgroundColor": "#f1e8d0",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -32,8 +32,7 @@
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.ACCESS_FINE_LOCATION",
-        "android.permission.ACCESS_COARSE_LOCATION",
-        "android.permission.RECORD_AUDIO"
+        "android.permission.ACCESS_COARSE_LOCATION"
       ],
       "predictiveBackGestureEnabled": false
     },
@@ -45,7 +44,7 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Fieldnotes uses your camera to photograph freshwater invertebrates.",
+          "cameraPermission": "InverteQuest uses your camera to photograph freshwater invertebrates.",
           "microphonePermission": false,
           "recordAudioAndroid": false
         }
@@ -53,8 +52,8 @@
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "Fieldnotes tags specimens with GPS coordinates.",
-          "locationWhenInUsePermission": "Fieldnotes tags specimens with GPS coordinates."
+          "locationAlwaysAndWhenInUsePermission": "InverteQuest tags specimens with GPS coordinates.",
+          "locationWhenInUsePermission": "InverteQuest tags specimens with GPS coordinates."
         }
       ],
       [

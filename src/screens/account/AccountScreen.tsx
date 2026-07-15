@@ -2,9 +2,7 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
-  ActivityIndicator,
   Alert,
   ScrollView,
 } from 'react-native';
@@ -12,6 +10,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { supabase } from '../../lib/supabase';
 import { useAuthStore } from '../../store/authStore';
+import { OTPModal, OTPMode } from '../../components/auth/OTPModal';
 import { Colors } from '../../constants/colors';
 import type { AppStackParamList } from '../../navigation/types';
 
@@ -19,107 +18,16 @@ type Props = {
   navigation: NativeStackNavigationProp<AppStackParamList, 'Account'>;
 };
 
-function getRedirectUrl(): string | undefined {
-  if (typeof window !== 'undefined' && window.location) {
-    return window.location.origin;
-  }
-  return undefined;
-}
-
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <View style={{ gap: 12 }}>
-      <Text style={{ fontFamily: 'Newsreader_600SemiBold', fontSize: 16, color: Colors.textPrimary }}>
-        {title}
-      </Text>
-      {children}
-    </View>
-  );
-}
-
-function SuccessBox({ message }: { message: string }) {
-  return (
-    <View style={{
-      backgroundColor: Colors.gradeA + '15', borderRadius: 10,
-      borderWidth: 1, borderColor: Colors.gradeA + '50', padding: 14,
-    }}>
-      <Text style={{ fontFamily: 'Newsreader_400Regular', fontSize: 14, color: Colors.textSecondary, lineHeight: 22 }}>
-        {message}
-      </Text>
-    </View>
-  );
-}
-
-function EmailInput({
-  value,
-  onChangeText,
-  placeholder = 'your@email.com',
-}: {
-  value: string;
-  onChangeText: (t: string) => void;
-  placeholder?: string;
-}) {
-  return (
-    <TextInput
-      value={value}
-      onChangeText={onChangeText}
-      placeholder={placeholder}
-      placeholderTextColor={Colors.textMuted}
-      keyboardType="email-address"
-      autoCapitalize="none"
-      autoCorrect={false}
-      style={{
-        fontFamily: 'Newsreader_400Regular', fontSize: 15,
-        color: Colors.textPrimary, backgroundColor: Colors.inputBg,
-        borderWidth: 1, borderColor: Colors.border, borderRadius: 8,
-        paddingHorizontal: 14, paddingVertical: 12,
-      }}
-    />
-  );
-}
-
 export function AccountScreen({ navigation }: Props) {
   const user = useAuthStore((s) => s.user);
   const isAnonymous = !user?.email;
 
-  const [backupEmail, setBackupEmail] = useState('');
-  const [backupLoading, setBackupLoading] = useState(false);
-  const [backupSent, setBackupSent] = useState(false);
+  const [otpVisible, setOtpVisible] = useState(false);
+  const [otpMode, setOtpMode] = useState<OTPMode>('backup');
 
-  const [signinEmail, setSigninEmail] = useState('');
-  const [signinLoading, setSigninLoading] = useState(false);
-  const [signinSent, setSigninSent] = useState(false);
-
-  async function handleBackup() {
-    const email = backupEmail.trim().toLowerCase();
-    if (!email.includes('@')) {
-      Alert.alert('Invalid email', 'Enter a valid email address.');
-      return;
-    }
-    setBackupLoading(true);
-    const { error } = await supabase.auth.updateUser(
-      { email },
-      { emailRedirectTo: getRedirectUrl() },
-    );
-    setBackupLoading(false);
-    if (error) { Alert.alert('Error', error.message); return; }
-    setBackupSent(true);
-  }
-
-  async function handleSignIn() {
-    const email = signinEmail.trim().toLowerCase();
-    if (!email.includes('@')) {
-      Alert.alert('Invalid email', 'Enter a valid email address.');
-      return;
-    }
-    setSigninLoading(true);
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { shouldCreateUser: false, emailRedirectTo: getRedirectUrl() },
-    });
-    setSigninLoading(false);
-    if (error) { Alert.alert('Error', error.message); return; }
-    setSigninSent(true);
+  function openModal(mode: OTPMode) {
+    setOtpMode(mode);
+    setOtpVisible(true);
   }
 
   async function handleSignOut() {
@@ -137,6 +45,12 @@ export function AccountScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors.parchment }}>
+      <OTPModal
+        visible={otpVisible}
+        mode={otpMode}
+        onDismiss={() => setOtpVisible(false)}
+      />
+
       <View style={{
         flexDirection: 'row', alignItems: 'center',
         paddingHorizontal: 16, paddingVertical: 12,
@@ -156,8 +70,7 @@ export function AccountScreen({ navigation }: Props) {
       </View>
 
       <ScrollView
-        contentContainerStyle={{ padding: 20, gap: 28 }}
-        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ padding: 20, gap: 20 }}
         showsVerticalScrollIndicator={false}
       >
         {/* Status card */}
@@ -171,7 +84,7 @@ export function AccountScreen({ navigation }: Props) {
                 Data stored on this device only
               </Text>
               <Text style={{ fontFamily: 'Newsreader_400Regular', fontSize: 13, color: Colors.textSecondary, lineHeight: 20 }}>
-                Clearing your browser data or switching devices will lose your collection. Link an email to access it from anywhere.
+                Clearing your browser data or switching devices will lose your collection. Link an email to access it anywhere.
               </Text>
             </>
           ) : (
@@ -189,71 +102,49 @@ export function AccountScreen({ navigation }: Props) {
           )}
         </View>
 
-        {/* Backup (anonymous users only) */}
+        {/* Back up (anonymous only) */}
         {isAnonymous && (
-          <Section title="Back up your data">
-            <Text style={{ fontFamily: 'Newsreader_400Regular', fontSize: 13, color: Colors.textSecondary, lineHeight: 20 }}>
-              Enter your email. You will get a confirmation link. Once you click it, your collection is linked to that address and accessible from any device.
+          <TouchableOpacity
+            onPress={() => openModal('backup')}
+            style={{
+              backgroundColor: Colors.forest, borderRadius: 10,
+              paddingVertical: 16, alignItems: 'center',
+            }}
+          >
+            <Text style={{ fontFamily: 'Newsreader_600SemiBold', fontSize: 16, color: Colors.parchment }}>
+              Save my data
             </Text>
-            {backupSent ? (
-              <SuccessBox message="Check your email and click the confirmation link. Once confirmed, your data is backed up." />
-            ) : (
-              <>
-                <EmailInput value={backupEmail} onChangeText={setBackupEmail} />
-                <TouchableOpacity
-                  onPress={handleBackup}
-                  disabled={backupLoading}
-                  style={{ backgroundColor: Colors.forest, borderRadius: 8, paddingVertical: 13, alignItems: 'center' }}
-                >
-                  {backupLoading
-                    ? <ActivityIndicator size="small" color={Colors.parchment} />
-                    : <Text style={{ fontFamily: 'Newsreader_600SemiBold', fontSize: 15, color: Colors.parchment }}>
-                        Save my data
-                      </Text>
-                  }
-                </TouchableOpacity>
-              </>
-            )}
-          </Section>
+          </TouchableOpacity>
         )}
 
         {/* Sign in on this device */}
-        <Section title="Sign in on this device">
-          <Text style={{ fontFamily: 'Newsreader_400Regular', fontSize: 13, color: Colors.textSecondary, lineHeight: 20 }}>
-            If you backed up your data on another device, enter that email to access your collection here.
+        <TouchableOpacity
+          onPress={() => openModal('signin')}
+          style={{
+            backgroundColor: Colors.inputBg, borderRadius: 10,
+            paddingVertical: 16, alignItems: 'center',
+            borderWidth: 1, borderColor: Colors.border,
+          }}
+        >
+          <Text style={{ fontFamily: 'Newsreader_600SemiBold', fontSize: 16, color: Colors.forest }}>
+            Sign in on this device
           </Text>
-          {signinSent ? (
-            <SuccessBox message="Check your email and click the sign-in link." />
-          ) : (
-            <>
-              <EmailInput value={signinEmail} onChangeText={setSigninEmail} />
-              <TouchableOpacity
-                onPress={handleSignIn}
-                disabled={signinLoading}
-                style={{
-                  backgroundColor: Colors.inputBg, borderRadius: 8,
-                  paddingVertical: 13, alignItems: 'center',
-                  borderWidth: 1, borderColor: Colors.border,
-                }}
-              >
-                {signinLoading
-                  ? <ActivityIndicator size="small" color={Colors.forest} />
-                  : <Text style={{ fontFamily: 'Newsreader_600SemiBold', fontSize: 15, color: Colors.forest }}>
-                      Send sign-in link
-                    </Text>
-                }
-              </TouchableOpacity>
-            </>
-          )}
-        </Section>
+        </TouchableOpacity>
+        <Text style={{
+          fontFamily: 'Newsreader_400Regular_Italic',
+          fontSize: 13, color: Colors.textMuted, textAlign: 'center', marginTop: -8,
+        }}>
+          Already backed up on another device? Sign in here to restore your collection.
+        </Text>
 
         {/* Sign out */}
         <TouchableOpacity
           onPress={handleSignOut}
           style={{
-            paddingVertical: 13, borderRadius: 10,
+            paddingVertical: 14, borderRadius: 10,
             borderWidth: 1, borderColor: Colors.rust + '60',
             backgroundColor: Colors.rust + '08', alignItems: 'center',
+            marginTop: 8,
           }}
         >
           <Text style={{ fontFamily: 'Newsreader_600SemiBold', fontSize: 15, color: Colors.rust }}>

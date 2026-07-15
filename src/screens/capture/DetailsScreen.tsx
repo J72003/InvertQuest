@@ -9,6 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
@@ -28,8 +29,11 @@ import { SegmentedControl } from '../../components/ui/SegmentedControl';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { Colors } from '../../constants/colors';
+import { OTPModal } from '../../components/auth/OTPModal';
 import type { AppStackParamList, MainTabParamList } from '../../navigation/types';
 import type { Behavior, ConfidenceLevel, SizeEstimate } from '../../types/database';
+
+const SAVE_PROMPT_KEY = 'save_prompt_v1';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
@@ -73,6 +77,7 @@ export function DetailsScreen({ navigation }: Props) {
   const [confidence, setConfidence] = useState<ConfidenceLevel | null>(null);
   const [notes, setNotes] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [showSaveModal, setShowSaveModal] = useState(false);
 
   // Pre-select taxon when AI result arrives with high confidence
   const didAutoSelect = useRef(false);
@@ -135,7 +140,15 @@ export function DetailsScreen({ navigation }: Props) {
 
       showToast(queued ? 'Saved offline. Will sync when connected.' : 'Specimen saved!', queued ? 'info' : 'success');
 
-      // Navigate back to Home tab
+      // Prompt anonymous users to save their data after their first successful upload
+      const isAnonymous = !user.email;
+      const promptShown = await AsyncStorage.getItem(SAVE_PROMPT_KEY);
+      if (isAnonymous && !promptShown && !queued) {
+        await AsyncStorage.setItem(SAVE_PROMPT_KEY, 'true');
+        setShowSaveModal(true);
+        return; // navigation happens on modal dismiss
+      }
+
       navigation.navigate('MainTabs', { screen: 'Collection' });
     } catch (e: any) {
       Alert.alert('Save Failed', e?.message ?? 'Could not save specimen. Please try again.');
@@ -149,6 +162,14 @@ export function DetailsScreen({ navigation }: Props) {
       style={{ flex: 1, backgroundColor: Colors.parchment }}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
+      <OTPModal
+        visible={showSaveModal}
+        mode="backup"
+        onDismiss={() => {
+          setShowSaveModal(false);
+          navigation.navigate('MainTabs', { screen: 'Collection' });
+        }}
+      />
       <SafeAreaView style={{ flex: 1 }} edges={['top']}>
         <ScrollView
           contentContainerStyle={{ paddingBottom: 120 }}
